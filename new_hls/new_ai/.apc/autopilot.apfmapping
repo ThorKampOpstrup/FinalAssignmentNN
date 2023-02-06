@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="matmul.cpp" path="/home/thops19/Documents/7.Semester/final/FinalAssignmentNN/new_hls/matmul.cpp"/>
+    <originFiles name="matmul.hpp" path="/home/thops19/Documents/7.Semester/final/FinalAssignmentNN/new_hls/matmul.hpp"/>
+  </source>
+  <testbench>
+    <originFiles name="matmul_tb.cpp" path="/home/thops19/Documents/7.Semester/final/FinalAssignmentNN/new_hls/matmul_tb.cpp"/>
+  </testbench>
+</autopilotfilemapping:AutoPilotFileMapping>
