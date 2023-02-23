@@ -51,10 +51,10 @@
 # Low-speed expansion connector
 # ---------------------------------------------------------------------------- 
 # Bank 65
-#set_property -dict { PACKAGE_PIN D7	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_0    }];  # "D7.HD_GPIO_0"
-#set_property -dict { PACKAGE_PIN F8	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_1    }];  # "F8.HD_GPIO_1"
-#set_property -dict { PACKAGE_PIN F7	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_2    }];  # "F7.HD_GPIO_2"
-#set_property -dict { PACKAGE_PIN G7	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_3    }];  # "G7.HD_GPIO_3"
+set_property -dict { PACKAGE_PIN D7	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_0    }];  # "D7.HD_GPIO_0"
+set_property -dict { PACKAGE_PIN F8	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_1    }];  # "F8.HD_GPIO_1"
+set_property -dict { PACKAGE_PIN F7	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_2    }];  # "F7.HD_GPIO_2"
+set_property -dict { PACKAGE_PIN G7	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_3    }];  # "G7.HD_GPIO_3"
 #set_property -dict { PACKAGE_PIN F6	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_4    }];  # "F6.HD_GPIO_4"
 #set_property -dict { PACKAGE_PIN G5	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_5    }];  # "G5.HD_GPIO_5"
 #set_property -dict { PACKAGE_PIN A6	IOSTANDARD LVCMOS18 }  [get_ports {HD_GPIO_6    }];  # "A6.HD_GPIO_6"

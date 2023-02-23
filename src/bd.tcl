@@ -136,6 +136,7 @@ xilinx.com:ip:blk_mem_gen:8.4\
 xilinx.com:ip:axi_intc:4.1\
 xilinx.com:ip:smartconnect:1.0\
 xilinx.com:hls:nn_inference:1.0\
+xilinx.com:ip:axi_gpio:2.0\
 xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:xlconstant:1.1\
@@ -232,10 +233,10 @@ proc create_root_design { parentCell } {
   # Create interface ports
 
   # Create ports
-  set led_ctrl1_0 [ create_bd_port -dir O led_ctrl1_0 ]
-  set led_ctrl2_0 [ create_bd_port -dir O led_ctrl2_0 ]
-  set led_ctrl3_0 [ create_bd_port -dir O led_ctrl3_0 ]
-  set led_ctrl4_0 [ create_bd_port -dir O led_ctrl4_0 ]
+  set HD_GPIO_0 [ create_bd_port -dir O HD_GPIO_0 ]
+  set HD_GPIO_1 [ create_bd_port -dir O HD_GPIO_1 ]
+  set HD_GPIO_2 [ create_bd_port -dir O HD_GPIO_2 ]
+  set HD_GPIO_3 [ create_bd_port -dir O HD_GPIO_3 ]
 
   # Create instance: axi_bram_ctrl_0, and set properties
   set axi_bram_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 axi_bram_ctrl_0 ]
@@ -263,7 +264,7 @@ proc create_root_design { parentCell } {
   # Create instance: axi_smc, and set properties
   set axi_smc [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 axi_smc ]
   set_property -dict [ list \
-   CONFIG.NUM_MI {2} \
+   CONFIG.NUM_MI {3} \
    CONFIG.NUM_SI {2} \
  ] $axi_smc
 
@@ -292,6 +293,13 @@ proc create_root_design { parentCell } {
   # Create instance: nn_inference_0, and set properties
   set nn_inference_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:nn_inference:1.0 nn_inference_0 ]
 
+  # Create instance: nn_monitor, and set properties
+  set nn_monitor [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 nn_monitor ]
+  set_property -dict [ list \
+   CONFIG.C_ALL_INPUTS {1} \
+   CONFIG.C_IS_DUAL {0} \
+ ] $nn_monitor
+
   # Create instance: not_gate_0, and set properties
   set block_name not_gate
   set block_cell_name not_gate_0
@@ -312,6 +320,12 @@ proc create_root_design { parentCell } {
    CONFIG.IN4_WIDTH {1} \
    CONFIG.NUM_PORTS {8} \
  ] $xlconcat_0
+
+  # Create instance: xlconcat_1, and set properties
+  set xlconcat_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_1 ]
+  set_property -dict [ list \
+   CONFIG.NUM_PORTS {6} \
+ ] $xlconcat_1
 
   # Create instance: xlconstant_0, and set properties
   set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
@@ -1047,40 +1061,39 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTA] [get_bd_intf_pins axi_bram_ctrl_0_bram/BRAM_PORTA]
   connect_bd_intf_net -intf_net axi_smc_M00_AXI [get_bd_intf_pins axi_bram_ctrl_0/S_AXI] [get_bd_intf_pins axi_smc/M00_AXI]
   connect_bd_intf_net -intf_net axi_smc_M01_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins axi_smc/M01_AXI]
+  connect_bd_intf_net -intf_net axi_smc_M02_AXI [get_bd_intf_pins axi_smc/M02_AXI] [get_bd_intf_pins nn_monitor/S_AXI]
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM0_FPD [get_bd_intf_pins axi_smc/S00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM0_FPD]
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM1_FPD [get_bd_intf_pins axi_smc/S01_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM1_FPD]
 
   # Create port connections
   connect_bd_net -net axi_bram_ctrl_0_bram_doutb [get_bd_pins axi_bram_ctrl_0_bram/doutb] [get_bd_pins nn_inference_0/input_img_q0]
-  connect_bd_net -net axi_bram_ctrl_0_bram_rstb_busy [get_bd_pins axi_bram_ctrl_0_bram/rstb_busy] [get_bd_pins nn_ctrl_0/rstb_busy]
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_intc_0/irq] [get_bd_pins xlconcat_0/In0]
   connect_bd_net -net fix_address_0_addr_out [get_bd_pins fix_address_0/addr_out] [get_bd_pins nn_ctrl_0/i_BRAM_addr]
-  connect_bd_net -net nn_ctrl_0_ap_rst [get_bd_pins nn_ctrl_0/ap_rst] [get_bd_pins not_gate_0/i_in]
-  connect_bd_net -net nn_ctrl_0_ap_start [get_bd_pins nn_ctrl_0/ap_start] [get_bd_pins nn_inference_0/ap_start]
-  connect_bd_net -net nn_ctrl_0_led_ctrl1 [get_bd_ports led_ctrl1_0] [get_bd_pins nn_ctrl_0/led_ctrl1]
-  connect_bd_net -net nn_ctrl_0_led_ctrl2 [get_bd_ports led_ctrl2_0] [get_bd_pins nn_ctrl_0/led_ctrl2]
-  connect_bd_net -net nn_ctrl_0_led_ctrl3 [get_bd_ports led_ctrl3_0] [get_bd_pins nn_ctrl_0/led_ctrl3]
-  connect_bd_net -net nn_ctrl_0_led_ctrl4 [get_bd_ports led_ctrl4_0] [get_bd_pins nn_ctrl_0/led_ctrl4]
+  connect_bd_net -net nn_ctrl_0_ap_rst [get_bd_pins nn_ctrl_0/ap_rst] [get_bd_pins not_gate_0/i_in] [get_bd_pins xlconcat_1/In5]
+  connect_bd_net -net nn_ctrl_0_ap_start1 [get_bd_ports HD_GPIO_0] [get_bd_pins nn_ctrl_0/ap_start] [get_bd_pins nn_inference_0/ap_start] [get_bd_pins xlconcat_1/In0]
   connect_bd_net -net nn_ctrl_0_o_BRAM_addr [get_bd_pins axi_bram_ctrl_0_bram/addrb] [get_bd_pins nn_ctrl_0/o_BRAM_addr]
   connect_bd_net -net nn_ctrl_0_o_BRAM_ce [get_bd_pins axi_bram_ctrl_0_bram/enb] [get_bd_pins nn_ctrl_0/o_BRAM_ce]
   connect_bd_net -net nn_ctrl_0_o_BRAM_din [get_bd_pins axi_bram_ctrl_0_bram/dinb] [get_bd_pins nn_ctrl_0/o_BRAM_din]
   connect_bd_net -net nn_ctrl_0_o_BRAM_wr [get_bd_pins axi_bram_ctrl_0_bram/web] [get_bd_pins nn_ctrl_0/o_BRAM_wr]
-  connect_bd_net -net nn_inference_0_ap_done [get_bd_pins nn_ctrl_0/ap_done] [get_bd_pins nn_inference_0/ap_done]
-  connect_bd_net -net nn_inference_0_ap_idle [get_bd_pins nn_ctrl_0/ap_idle] [get_bd_pins nn_inference_0/ap_idle]
-  connect_bd_net -net nn_inference_0_ap_ready [get_bd_pins nn_ctrl_0/ap_ready] [get_bd_pins nn_inference_0/ap_ready]
+  connect_bd_net -net nn_inference_0_ap_done1 [get_bd_ports HD_GPIO_1] [get_bd_pins nn_ctrl_0/ap_done] [get_bd_pins nn_inference_0/ap_done] [get_bd_pins xlconcat_1/In2]
+  connect_bd_net -net nn_inference_0_ap_idle1 [get_bd_ports HD_GPIO_2] [get_bd_pins nn_ctrl_0/ap_idle] [get_bd_pins nn_inference_0/ap_idle] [get_bd_pins xlconcat_1/In3]
+  connect_bd_net -net nn_inference_0_ap_ready [get_bd_pins axi_bram_ctrl_0_bram/rstb_busy] [get_bd_pins nn_ctrl_0/rstb_busy] [get_bd_pins xlconcat_1/In4]
+  connect_bd_net -net nn_inference_0_ap_ready1 [get_bd_ports HD_GPIO_3] [get_bd_pins nn_ctrl_0/ap_ready] [get_bd_pins nn_inference_0/ap_ready] [get_bd_pins xlconcat_1/In1]
   connect_bd_net -net nn_inference_0_ap_return [get_bd_pins nn_ctrl_0/nn_res_in] [get_bd_pins nn_inference_0/ap_return]
   connect_bd_net -net nn_inference_0_input_img_address0 [get_bd_pins fix_address_0/addr_in] [get_bd_pins nn_inference_0/input_img_address0]
   connect_bd_net -net nn_inference_0_input_img_ce0 [get_bd_pins nn_ctrl_0/i_BRAM_ce] [get_bd_pins nn_inference_0/input_img_ce0]
   connect_bd_net -net not_gate_0_o_out [get_bd_pins nn_inference_0/ap_rst] [get_bd_pins not_gate_0/o_out]
-  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_bram_ctrl_0/s_axi_aresetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_smc/aresetn] [get_bd_pins rst_ps8_0_100M/peripheral_aresetn]
+  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_bram_ctrl_0/s_axi_aresetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_smc/aresetn] [get_bd_pins nn_monitor/s_axi_aresetn] [get_bd_pins rst_ps8_0_100M/peripheral_aresetn]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins xlconcat_0/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
+  connect_bd_net -net xlconcat_1_dout [get_bd_pins nn_monitor/gpio_io_i] [get_bd_pins xlconcat_1/dout]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins axi_intc_0/intr] [get_bd_pins xlconstant_0/dout]
-  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_bram_ctrl_0/s_axi_aclk] [get_bd_pins axi_bram_ctrl_0_bram/clkb] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_smc/aclk] [get_bd_pins nn_ctrl_0/i_Clk] [get_bd_pins nn_inference_0/ap_clk] [get_bd_pins rst_ps8_0_100M/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0]
+  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_bram_ctrl_0/s_axi_aclk] [get_bd_pins axi_bram_ctrl_0_bram/clkb] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_smc/aclk] [get_bd_pins nn_ctrl_0/i_Clk] [get_bd_pins nn_inference_0/ap_clk] [get_bd_pins nn_monitor/s_axi_aclk] [get_bd_pins rst_ps8_0_100M/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins rst_ps8_0_100M/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
 
   # Create address segments
   assign_bd_address -offset 0xA0000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_bram_ctrl_0/S_AXI/Mem0] -force
   assign_bd_address -offset 0xA0010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_intc_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0xA0020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs nn_monitor/S_AXI/Reg] -force
 
 
   # Restore current instance
